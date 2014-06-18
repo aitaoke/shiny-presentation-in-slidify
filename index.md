@@ -1,0 +1,99 @@
+---
+title       : My first shiny app
+subtitle    : Scatter disgram of norm and exp
+author      : aitaoke
+job         : Student
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+
+
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+
+
+--- .class #id
+
+
+## UI.R code
+
+```r
+    library(shiny)
+    
+    shinyUI(fluidPage(
+      # Application title
+      headerPanel("Scatter diagram of norm and exp."),
+          column(4,wellPanel(
+          radioButtons("dist","Distribution type:",
+                       c("Norm"="norm","Exp"="exp")),
+          br(),   
+          sliderInput("n", 
+                    "Number of sample:", 
+                    min = 0, 
+                    max = 1000, 
+                    value = 500,step=10),
+          "You can change the type of the scatter diagram",
+          "and choose the sample number here."
+            )),
+      column(7,  
+        "Mind you that the scatterplot below will not be displayed unless",
+        " there are more than 100 samples. You can try it yourself.",
+        conditionalPanel("input.n>=100",plotOutput("scatterPlot",height=400)),
+        textOutput("currentTime")
+      )
+    ))
+```
+
+
+
+---.class #id
+
+## Server.R code 
+
+
+```r
+library(shiny)
+    
+    shinyServer(function(input, output,session) {
+        data <- reactive({
+            dist <- switch(input$dist,
+                           norm = rnorm,
+                           exp = rexp,
+                           )
+            dist(input$n)
+        })
+        output$scatterPlot <- renderPlot({     
+            # generate and plot an rnorm distribution with the requested
+            # number of observations
+            dist <- input$dist
+            x<-data()
+            m<-input$n
+            plot(x,main=paste('r', dist, '(', m, ')', sep=''),col="blue")
+        })
+        
+        output$currentTime<-renderText(
+           {invalidateLater(1000,session)
+            paste("Current time:", Sys.time())
+          })
+     })
+```
+
+---.class #id
+
+
+## result 1
+
+<div style='text-align: center;'>
+    <img height='560' src='shiny.png' />
+</div>
+
+---.class #id
+
+## result 2
+
+<div style='text-align: center;'>
+    <img height='560' src='shiny2.png' />
+</div>
+
+---
